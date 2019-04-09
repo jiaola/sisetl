@@ -29,11 +29,11 @@ pipenv run python etl/jobs/{etl_job_name}.py
 
 ### Scopus Jobs
 
-Here are jobs to retrieve data from Scopus. By default all jobs
-are run in test mode. To turn it off, use TEST=OFF. For example: 
+Here are jobs to retrieve data from Scopus. Set ENV to `dev` (default), `test`, or `production` to load
+different environment variables. For example,
 
 ```
-TEST=OFF pipenv run bonobo run -m etl.jobs.scopus.biophysics 
+ENV=TEST pipenv run bonobo run -m etl.jobs.scopus.biophysics 
 ```
 
 #### Biophysics
