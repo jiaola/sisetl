@@ -6,7 +6,7 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-bonobo = "*"
+bonobo = {extras = ["docker"],version = "*"}
 python-dotenv = "*"
 pymongo = "*"
 pymssql = "*"
@@ -15,4 +15,4 @@ risparser = {git = "https://github.com/MrTango/RISparser.git"}
 elsapy = {git = "https://github.com/jiaola/elsapy.git"}
 
 [requires]
-python_version = "3.7"
+python_version = "3.7

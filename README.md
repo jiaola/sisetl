@@ -25,9 +25,29 @@ Or
 pipenv run python etl/jobs/{etl_job_name}.py 
 ```
 
+## ETL Jobs
+
+### Scopus Jobs
+
+Here are jobs to retrieve data from Scopus. By default all jobs
+are run in test mode. To turn it off, use TEST=OFF. For example: 
+
+```
+TEST=OFF pipenv run bonobo run -m etl.jobs.scopus.biophysics 
+```
+
+#### Biophysics
+
+This is a prototype job to retrieve scopus data for only one department at JHU: biophysics
+
+```
+pipenv run bonobo run -m etl.jobs.scopus.biophysics 
+```
+
 ## Build and run with Docker
 
 ```
 docker build -t jiaola/sisetl .
 ```
+
 
