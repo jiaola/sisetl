@@ -12,7 +12,6 @@ class Config:
     MONGO_HOST = os.getenv('MONGODB_HOST', 'mongo')
     MONGO_PORT = int(os.getenv('MONGODB_PORT', '27017'))
     MONGO_DATABASE = os.getenv('MONGODB_DATABASE', 'scopus')
-    SCOPUS_APIKEY = os.getenv('SCOPUS_APIKEY', '')
 
 
 class DevelopmentConfig(Config):
