@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "c5ad64be02b32fddb47788b017643010e2edd5e35135943cab33d686a8510bae"
+            "sha256": "edf01d2d589d6feff21acc1c44f8402fdc22bcdac5517c995cc3883c6df286c4"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -24,22 +24,12 @@
             "version": "==1.4.3"
         },
         "bonobo": {
-            "extras": [
-                "docker"
-            ],
             "hashes": [
                 "sha256:93337f5c39aae4923bc3ee0ee051b279f61bb7c45870cc29d1f07d8b30f0b766",
                 "sha256:a6fe3077158d7ec8ff1d075e231f1234e6375d31a8bddd98e1eef496edfdfe46"
             ],
             "index": "pypi",
             "version": "==0.6.3"
-        },
-        "bonobo-docker": {
-            "hashes": [
-                "sha256:3ba99c0172063d9c6ba19cde8a969152c2823767011a0886da7031dda2ef22a8",
-                "sha256:8faad8640349c6962171a0f28ec15a3db44fd83c41e42c78e648edc045558427"
-            ],
-            "version": "==0.6.0"
         },
         "certifi": {
             "hashes": [
@@ -95,20 +85,6 @@
             ],
             "index": "pypi",
             "version": "==0.29.6"
-        },
-        "docker": {
-            "hashes": [
-                "sha256:144248308e8ea31c4863c6d74e1b55daf97cc190b61d0fe7b7313ab920d6a76c",
-                "sha256:c1d4e37b1ea03b2b6efdd0379640f6ea372fefe56efa65d4d17c34c6b9d54558"
-            ],
-            "version": "==2.7.0"
-        },
-        "docker-pycreds": {
-            "hashes": [
-                "sha256:6ce3270bcaf404cc4c3e27e4b6c70d3521deae82fb508767870fdbf772d584d4",
-                "sha256:7266112468627868005106ec19cd0d722702d2b7d5912a28e19b826c3d37af49"
-            ],
-            "version": "==0.4.0"
         },
         "elsapy": {
             "git": "https://github.com/jiaola/elsapy.git",
@@ -318,13 +294,6 @@
             "git": "https://github.com/MrTango/RISparser.git",
             "ref": "d133d74022d3edbbdec19ef72bd34c8902a0bad1"
         },
-        "semantic-version": {
-            "hashes": [
-                "sha256:2a4328680073e9b243667b201119772aefc5fc63ae32398d6afafff07c4f54c0",
-                "sha256:2d06ab7372034bcb8b54f2205370f4aa0643c133b7e6dbd129c5200b83ab394b"
-            ],
-            "version": "==2.6.0"
-        },
         "six": {
             "hashes": [
                 "sha256:3350809f0555b11f552448330d0b52d5f24c91a322ea4a15ef22629740f3761c",
@@ -352,13 +321,6 @@
                 "sha256:de9529817c93f27c8ccbfead6985011db27bd0ddfcdb2d86f3f663385c6a9c22"
             ],
             "version": "==1.24.1"
-        },
-        "websocket-client": {
-            "hashes": [
-                "sha256:1151d5fb3a62dc129164292e1227655e4bbc5dd5340a5165dfae61128ec50aa9",
-                "sha256:1fd5520878b68b84b5748bb30e592b10d0a91529d5383f74f4964e72b297fd3a"
-            ],
-            "version": "==0.56.0"
         },
         "whistle": {
             "hashes": [
