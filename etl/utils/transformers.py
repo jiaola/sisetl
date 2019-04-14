@@ -22,6 +22,15 @@ def fix_keys(o):
         return o
 
 
+def extract_id(args):
+    return args['dc:identifier'].split(':')[1]
+
+
+def remove_errata(doc):
+    if doc['coredata']['subtype'] != 'er': # not erreta
+        yield NOT_MODIFIED
+
+
 class Uniquify(Configurable):
     """Deduplicate rows based on a field"""
     field = Option(positional=True, default=0)
@@ -78,6 +87,7 @@ class MongoWriter(Configurable):
         db = client[self.database]
         collection = db[self.collection]
         collection.insert_one(fix_keys(args))
+
 
 class MongoReader(Configurable):
     database = Option(str, positional=True, default='scopus', __doc__='the mongodb database name')

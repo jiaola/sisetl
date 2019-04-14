@@ -1,23 +1,21 @@
-# Import faculty force data and scopus data based on FF
+# Import faculty force data and scopus data for authors based on FF
 
 import sys
-from datetime import datetime
 import bonobo
 from pymongo import MongoClient
 from etl.api.elsapi import *
 from etl.utils.transformers import *
-from bonobo.constants import NOT_MODIFIED
 from etl.config import config, env
 from bonobo.config import use_raw_input
 
 database = config.MONGO_DATABASE
-limit = 1 if env == 'test' else sys.maxsize
+limit = 100 if env == 'test' else sys.maxsize
 
 
-def extract_authors(args):
-    for author in args['results']:
-        yield author
-
+def extract_author_scopus_ids(author):
+    for scopus_id in author['scopus_ids']:
+        if scopus_id:
+            yield scopus_id
 
 @use_raw_input
 def create_author_document(row):
@@ -52,13 +50,44 @@ def create_author_document(row):
 def get_graph(**options):
     graph = bonobo.Graph()
 
-    # Import authors
+    # # Import authors
+    # graph.add_chain(
+    #     bonobo.CsvReader('data/ff-faculty.csv', skip=1),
+    #     bonobo.Limit(limit),
+    #     create_author_document,
+    #     FilterDuplicate(collection="jhu-authors", field='hopkins_id', target='hopkins_id', database=database),
+    #     MongoWriter(collection='jhu-authors', database=database),
+    # )
+    #
+    # # Retreive authors from scopus
+    # graph.add_chain(
+    #     extract_author_scopus_ids,
+    #     bonobo.Limit(limit),
+    #     FilterDuplicate(collection='scopus-authors', database=database),
+    #     get_author,
+    #     MongoWriter(collection='scopus-authors', database=database),
+    #     _input=create_author_document,
+    # )
+
+    # Retrieve documents from scopus
     graph.add_chain(
-        bonobo.CsvReader('data/ff-faculty.csv', skip=1),
+        bonobo.CsvReader('data/ff-article-ids-17.csv'),
         bonobo.Limit(limit),
-        create_author_document,
-        FilterDuplicate(collection="jhu-authors", field='jhed_id', target='jhed_id', database=database),
-        MongoWriter(collection='jhu-authors', database=database),
+        FilterDuplicate(collection='scopus-documents', database=database),
+        get_document,
+        # Keep errata data. Leave it to downstream analysis. Otherwise it'll be repeatedly downloaded and discarded.
+        # remove_errata,
+        MongoWriter(collection='scopus-documents', database=database),
+    )
+
+    # Extract serials data from Scopus and load into MongoDB
+    graph.add_chain(
+        lambda args: args['coredata'].get('source-id', None),
+        bonobo.Limit(limit),
+        FilterDuplicate(collection='scopus-serials', database=database),
+        get_serial,
+        MongoWriter(collection='scopus-serials', database=database),
+        _input=get_document
     )
 
     return graph

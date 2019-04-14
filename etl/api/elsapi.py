@@ -5,14 +5,13 @@ from elsapy import log_util
 from elsapy.elsdoc import ElsAbstract, ElsSerial
 from elsapy.elsprofile import ElsAuthor, ElsAffil
 from elsapy.elssearch import ElsSearch, ElsSerialTitleSearch
-
-from etl.config import config
+from datetime import datetime
+from etl.config import key_manager
 
 logger = log_util.get_logger(__name__)
-scopus_api_key = config.SCOPUS_APIKEY
 
 
-def get_docs_by_year(year, affl_id='60005248', get_all=False, api_key=scopus_api_key):
+def get_docs_by_year(year, affl_id='60005248', get_all=False):
     """
     Get documents by year
 
@@ -22,6 +21,8 @@ def get_docs_by_year(year, affl_id='60005248', get_all=False, api_key=scopus_api
     :param api_key:
     :return:
     """
+    logger.info(f'Searching docs for year {year} and affiliation {affl_id}')
+    api_key = key_manager.get_key('scopus_search')
     client = elsclient.ElsClient(api_key)
 
     # Split the search since for recent years JHU has publications more than 5,000 each year.
@@ -36,7 +37,7 @@ def get_docs_by_year(year, affl_id='60005248', get_all=False, api_key=scopus_api
     return all_results
 
 
-def get_docs_by_author(author_id, api_key=scopus_api_key):
+def get_docs_by_author(author_id):
     """
     Get documents published by an author
 
@@ -44,6 +45,8 @@ def get_docs_by_author(author_id, api_key=scopus_api_key):
     :param api_key:
     :return:
     """
+    logger.info(f'Searching docs by author {author_id}')
+    api_key = key_manager.get_key('scopus_search')
     client = elsclient.ElsClient(api_key)
     search = ElsSearch(f'au-id({author_id})', 'scopus')
     search.execute(client, True)
@@ -51,7 +54,7 @@ def get_docs_by_author(author_id, api_key=scopus_api_key):
         yield doc
 
 
-def get_document(doc_id, api_key=scopus_api_key):
+def get_document(doc_id):
     """
     Retrieves a document
 
@@ -59,6 +62,8 @@ def get_document(doc_id, api_key=scopus_api_key):
     :param api_key:
     :return:
     """
+    logger.info(f'Retrieving document {doc_id}')
+    api_key = key_manager.get_key('abstract')
     client = elsclient.ElsClient(api_key)
     doc = ElsAbstract(scopus_id=doc_id)
     doc.read(client)
@@ -73,10 +78,11 @@ def get_document(doc_id, api_key=scopus_api_key):
             doc_data['references'] = refs_data
         elif isinstance(refs_data, dict):  # Fix the reference data to always make it an array
             doc_data['references'] = [refs_data]
+    doc_data['last_modified'] = datetime.now()
     return doc_data
 
 
-def get_doc_refs(doc_id, api_key=scopus_api_key):
+def get_doc_refs(doc_id):
     """
     Retrieves references of a document
 
@@ -84,13 +90,15 @@ def get_doc_refs(doc_id, api_key=scopus_api_key):
     :param api_key:
     :return:
     """
+    logger.info(f'Retrieving document references {doc_id}')
+    api_key = key_manager.get_key('abstract')
     client = elsclient.ElsClient(api_key)
     refs = ElsAbstract(scopus_id=doc_id, params={'view': 'REF'})
     refs.read(client)
     return refs.data
 
 
-def get_authors_from_doc(doc, api_key=scopus_api_key):
+def get_authors_from_doc(doc):
     for author in doc.get('authors', {}).get('author', []):
         yield author
         # affl = author['affiliation']
@@ -106,7 +114,7 @@ def get_authors_from_doc(doc, api_key=scopus_api_key):
         #         yield author
 
 
-def get_doc_authors(doc_id, api_key=scopus_api_key):
+def get_doc_authors(doc_id):
     """
     Retrieves document-author relationship in tuples
 
@@ -114,7 +122,8 @@ def get_doc_authors(doc_id, api_key=scopus_api_key):
     :param api_key:
     :return:
     """
-    """"""
+    logger.info(f'Retrieving author affiliations of document {doc_id}')
+    api_key = key_manager.get_key('abstract')
     client = elsclient.ElsClient(api_key)
     abstract = ElsAbstract(scopus_id=doc_id, params={'field': 'author,affiliation'})
     abstract.read(client)
@@ -122,7 +131,7 @@ def get_doc_authors(doc_id, api_key=scopus_api_key):
         yield {'doc': doc_id, 'author': author.get('@auid', None), 'seq': author.get('@seq', None)}
 
 
-def get_author(author_id, api_key=scopus_api_key):
+def get_author(author_id):
     """
     Retrieves an author
 
@@ -130,11 +139,14 @@ def get_author(author_id, api_key=scopus_api_key):
     :param api_key:
     :return:
     """
+    logger.info(f'Retrieving author {author_id}')
+    api_key = key_manager.get_key('author')
     client = elsclient.ElsClient(api_key)
     author = ElsAuthor(author_id=author_id)
     if not author.read(client):
         logger.error("[!]Read author failed: %s", author_id)
     author.data['_id'] = author.data['coredata']['dc:identifier'].split(':')[1]
+    author.data['last_modified'] = datetime.now()
     return author.data
 
 
@@ -153,7 +165,9 @@ def get_author_affl(author_data):
         yield {'author': author_id, 'affiliation': affl_history['@id'], 'seq': 1}
 
 
-def get_affiliation(affl_id, api_key=scopus_api_key):
+def get_affiliation(affl_id):
+    logger.info(f'Retrieving affiliation {affl_id}')
+    api_key = key_manager.get_key('affiliation')
     client = elsclient.ElsClient(api_key)
     affl = ElsAffil(affil_id=affl_id)
     if not affl.read(client):
@@ -171,14 +185,15 @@ def get_affiliation(affl_id, api_key=scopus_api_key):
     #     parent_id = parent.parent
 
 
-def get_serial(serial_id, api_key=scopus_api_key):
+def get_serial(serial_id):
     """
     Retrieves a serial by a scopus ID
     :param serial_id:
     :param api_key:
     :return:
     """
-    logger.info('getting serial: ' + serial_id)
+    logger.info(f'Retrieving serial {serial_id}')
+    api_key = key_manager.get_key('serial')
     client = elsclient.ElsClient(api_key)
     serial = ElsSerial(scopus_id=serial_id, params={'view': 'STANDARD'})
     if not serial.read(client):
@@ -191,7 +206,7 @@ def get_serial(serial_id, api_key=scopus_api_key):
         return data
 
 
-def get_serial_by_title(title, api_key=scopus_api_key):
+def get_serial_by_title(title):
     """
     Retrieves serials by the title
 
@@ -199,7 +214,8 @@ def get_serial_by_title(title, api_key=scopus_api_key):
     :param api_key:
     :return:
     """
-    logger.info('searching serial by title: ' + title)
+    logger.info('Searching serial by title: ' + title)
+    api_key = key_manager.get_key('serial_title')
     client = elsclient.ElsClient(api_key)
     search = ElsSerialTitleSearch(title)
     search.execute(client)
@@ -208,7 +224,7 @@ def get_serial_by_title(title, api_key=scopus_api_key):
         yield serial
 
 
-def get_author_by_name(last_name, first_name, affiliation_id='60005248', api_key=scopus_api_key):
+def get_author_by_name(last_name, first_name, affiliation_id='60005248'):
     """
     Search author by first name, last name and affiliation
     :param last_name:
@@ -218,6 +234,7 @@ def get_author_by_name(last_name, first_name, affiliation_id='60005248', api_key
     :return:
     """
     logger.info('searching authors by name and affiliation')
+    api_key = key_manager.get_key('scopus_search')
     query = f'authlast({last_name}) and authfirst({first_name}) and af-id({affiliation_id})'
     client = elsclient.ElsClient(api_key)
     search = ElsSearch(query, 'author')

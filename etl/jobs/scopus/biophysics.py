@@ -13,10 +13,6 @@ database = config.MONGO_DATABASE
 limit = 1 if env == 'test' else sys.maxsize
 
 
-def extract_id(args):
-    return args['dc:identifier'].split(':')[1]
-
-
 def extract_authors(args):
     for author in args['results']:
         yield author
@@ -29,11 +25,6 @@ def create_author_document(args):
         'scopus_ids': [extract_id(x) for x in args['results']]
     }
     yield data
-
-
-def remove_errata(doc):
-    if doc['coredata']['subtype'] != 'er': # not erreta
-        yield NOT_MODIFIED
 
 
 def get_graph(**options):
@@ -54,7 +45,7 @@ def get_graph(**options):
         MongoWriter(collection='jhu-authors', database=database),
     )
 
-    # Extract faculties from Scopus and load into MongoDB
+    # Extract authors from Scopus and load into MongoDB
     graph.add_chain(
         extract_authors,
         bonobo.Limit(limit),
