@@ -14,6 +14,7 @@ class Config:
     MONGO_HOST = config_yaml.get('mongodb', {}).get('host', 'localhost')
     MONGO_PORT = config_yaml.get('mongodb', {}).get('port', 27017)
     MONGO_DATABASE = config_yaml.get('mongodb', {}).get('database', 'sisbib')
+    ENV = ''
 
 
 class DevelopmentConfig(Config):
@@ -36,6 +37,7 @@ elif __env__ == 'prod':
     config = ProductionConfig
 else:
     raise ValueError('Invalid environment name. It has to be one of dev, test or prod.')
+config.ENV = __env__
 
 
 class KeyManager:

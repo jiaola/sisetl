@@ -5,11 +5,11 @@ import bonobo
 from pymongo import MongoClient
 from etl.api.elsapi import *
 from etl.utils.transformers import *
-from etl.config import config, env
+from etl.config import config
 from bonobo.config import use_raw_input
 
 database = config.MONGO_DATABASE
-limit = 100 if env == 'test' else sys.maxsize
+limit = 100 if config.ENV == 'test' else sys.maxsize
 
 
 def extract_author_scopus_ids(author):
