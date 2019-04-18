@@ -1,36 +1,38 @@
-from dotenv import load_dotenv
 import os
+import yaml
 
-env = os.getenv('ENV', 'dev')
-if env is None:
-    load_dotenv(verbose=True)  # load the default .env file
-else:
-    load_dotenv(dotenv_path=f'.env.{env}', verbose=True)
+__env__ = os.getenv('ENV', 'dev')
+
+with open(f'config.{__env__}.yml', 'r') as stream:
+    try:
+        config_yaml = yaml.safe_load(stream)
+    except yaml.YAMLError as ex:
+        print(ex)
 
 
 class Config:
-    MONGO_HOST = os.getenv('MONGODB_HOST', 'mongo')
-    MONGO_PORT = int(os.getenv('MONGODB_PORT', '27017'))
-    MONGO_DATABASE = os.getenv('MONGODB_DATABASE', 'scopus')
+    MONGO_HOST = config_yaml.get('mongodb', {}).get('host', 'localhost')
+    MONGO_PORT = config_yaml.get('mongodb', {}).get('port', 27017)
+    MONGO_DATABASE = config_yaml.get('mongodb', {}).get('database', 'sisbib')
 
 
 class DevelopmentConfig(Config):
-    MONGO_DATABASE = os.getenv('MONGODB_DATABASE', 'biophysics')
+    MONGO_DATABASE = config_yaml.get('mongodb', {}).get('database', 'biophysics')
 
 
 class TestConfig(Config):
-    MONGO_DATABASE = os.getenv('MONGODB_DATABASE', 'test')
+    MONGO_DATABASE = config_yaml.get('mongodb', {}).get('database', 'test')
 
 
 class ProductionConfig(Config):
-    MONGO_DATABASE = os.getenv('MONGODB_DATABASE', 'scopus')
+    MONGO_DATABASE = config_yaml.get('mongodb', {}).get('database', 'sisbib')
 
 
-if env == 'dev':
+if __env__ == 'dev':
     config = DevelopmentConfig
-elif env == 'test':
+elif __env__ == 'test':
     config = TestConfig
-elif env == 'prod':
+elif __env__ == 'prod':
     config = ProductionConfig
 else:
     raise ValueError('Invalid environment name. It has to be one of dev, test or prod.')
@@ -58,7 +60,7 @@ class KeyManager:
 
 
 # See https://dev.elsevier.com/api_key_settings.html
-api_limits = {
+__api_limits__ = {
     'serial': 20000,
     'abstract': 10000,
     'affiliation': 5000,
@@ -68,5 +70,5 @@ api_limits = {
     'affiliation_search': 5000,
     'serial_title': 20000,
 }
-api_keys = os.getenv('SCOPUS_API_KEYS', '').split(':')
-key_manager = KeyManager(limits=api_limits, keys=api_keys)
+__api_keys__ = config.get('scopus', {}).get('api_keys', [])
+key_manager = KeyManager(limits=__api_limits__, keys=__api_keys__)
